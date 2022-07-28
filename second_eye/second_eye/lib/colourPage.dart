@@ -14,8 +14,7 @@ class ColourScreen extends StatefulWidget {
 }
 
 class _ColourScreenState extends State<ColourScreen> {
-  File imageFile =
-      'storage/emulated/0/Images/Camera/IMG_20220720_054032.jpg' as File;
+  late File imageFile = File('web/favicon.png');
   _getFromGallery() async {
     PickedFile pickedFile = await ImagePicker().getImage(
       source: ImageSource.gallery,

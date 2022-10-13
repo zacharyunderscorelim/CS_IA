@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:second_eye/colourPage.dart';
 import 'package:second_eye/dysPage.dart';
 import 'globals.dart' as globals;
+import 'dart:developer' as developer;
 
 void main() {
   runApp(
@@ -37,7 +38,7 @@ class _MyAppState extends State<MyApp> {
     _page2 = ColourScreen(changePage: _changeTab);
     _page3 = DysScreen(changePage: _changeTab);
     _page4 = DysScreen(changePage: _changeTab);
-    _pages = [_page1, _page2, _page3];
+    _pages = [_page1, _page2, _page3, _page4];
     _currentIndex = 0;
     _currentPage = _page1;
   }
@@ -46,6 +47,7 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _currentIndex = index;
       _currentPage = _pages[index];
+      developer.log("Current index: $_currentIndex");
     });
   }
 

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:second_eye/dysPage.dart';
 import 'main.dart';
+import 'package:image_pixels/image_pixels.dart';
 
 class ColourScreen extends StatefulWidget {
   const ColourScreen({Key? key, required this.changePage}) : super(key: key);
@@ -14,19 +15,22 @@ class ColourScreen extends StatefulWidget {
 }
 
 class _ColourScreenState extends State<ColourScreen> {
-  late File imageFile = File('web/favicon.png');
-  _getFromGallery() async {
+  File? imageFile;
+  Offset localPosition = const Offset(-1, -1);
+  Future _getFromGallery() async {
     PickedFile pickedFile = await ImagePicker().getImage(
       source: ImageSource.gallery,
       maxWidth: 1800,
       maxHeight: 1800,
     );
     if (pickedFile != null) {
-      imageFile = File(pickedFile.path);
+      setState(() {
+        imageFile = File(pickedFile.path);
+      });
     }
   }
 
-  _getFromCamera() async {
+  Future _getFromCamera() async {
     PickedFile pickedFile = await ImagePicker().getImage(
       source: ImageSource.camera,
       maxWidth: 1800,
@@ -39,6 +43,8 @@ class _ColourScreenState extends State<ColourScreen> {
     }
   }
 
+  Future ColourDetection() async {}
+
   @override
   Widget build(BuildContext context) {
     screenindex = 1;
@@ -49,12 +55,40 @@ class _ColourScreenState extends State<ColourScreen> {
             children: [
               SizedBox(height: 50),
               Container(
-                height: 400,
-                width: 600,
-                child: ClipRRect(
-                    borderRadius: BorderRadius.circular(30.0),
-                    child: Image.file(imageFile, fit: BoxFit.cover)),
-              ),
+                  height: 400,
+                  width: 600,
+
+                  // adding listener to the image
+                  child: Listener(
+                    onPointerMove: (PointerMoveEvent details) {
+                      setState(() {
+                        localPosition = details.localPosition;
+                      });
+                    },
+                    onPointerDown: (PointerDownEvent details) {
+                      setState(() {
+                        localPosition = details.localPosition;
+                      });
+                    },
+                    child: ImagePixels(
+                      imageProvider: FileImage(imageFile == null
+                          ? File('assets/placeholder.png')
+                          : imageFile!),
+                      builder: (BuildContext context, ImgDetails img) {
+                        var color = img.pixelColorAt!(
+                          localPosition.dx.toInt(),
+                          localPosition.dy.toInt(),
+                        );
+                        if (imageFile == null) {
+                          return const SizedBox(
+                              width: 150,
+                              height: 213,
+                              child: Image(
+                                  image: AssetImage('assets/placeholder.png')));
+                        }
+                      },
+                    ),
+                  )),
               Container(
                 height: 100,
                 width: 600,

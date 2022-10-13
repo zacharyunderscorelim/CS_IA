@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class DysScreen extends StatefulWidget {
   const DysScreen({Key? key, required this.changePage}) : super(key: key);
@@ -8,6 +11,33 @@ class DysScreen extends StatefulWidget {
 }
 
 class _DysScreenState extends State<DysScreen> {
+  File? imageFile;
+  Future _getFromGallery() async {
+    PickedFile pickedFile = await ImagePicker().getImage(
+      source: ImageSource.gallery,
+      maxWidth: 1800,
+      maxHeight: 1800,
+    );
+    if (pickedFile != null) {
+      setState(() {
+        imageFile = File(pickedFile.path);
+      });
+    }
+  }
+
+  Future _getFromCamera() async {
+    PickedFile pickedFile = await ImagePicker().getImage(
+      source: ImageSource.camera,
+      maxWidth: 1800,
+      maxHeight: 1800,
+    );
+    if (pickedFile != null) {
+      setState(() {
+        imageFile = File(pickedFile.path);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -21,12 +51,15 @@ class _DysScreenState extends State<DysScreen> {
                 width: 600,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(30.0),
-                  child: Image.network(
-                    'https://memezila.com/saveimage/Local-duck-receives-headpats-Look-how-happy-this-duck-is-meme-9988',
-                    height: 150.0,
-                    width: 150.0,
-                    fit: BoxFit.cover,
-                  ),
+                  child: imageFile == null
+                      ? Image.network(
+                          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/White_flag_of_surrender.svg/800px-White_flag_of_surrender.svg.png',
+                          fit: BoxFit.cover,
+                        )
+                      : Image.file(
+                          imageFile!,
+                          fit: BoxFit.cover,
+                        ),
                 ),
               ),
               Container(
@@ -61,7 +94,9 @@ class _DysScreenState extends State<DysScreen> {
                         padding: EdgeInsets.zero,
                         icon: const Icon(Icons.upload_file_rounded),
                         iconSize: 70,
-                        onPressed: () {},
+                        onPressed: () {
+                          _getFromGallery();
+                        },
                       ),
                     ),
                     const SizedBox(
@@ -75,7 +110,9 @@ class _DysScreenState extends State<DysScreen> {
                         padding: EdgeInsets.zero,
                         icon: const Icon(Icons.camera_alt_rounded),
                         iconSize: 70,
-                        onPressed: () {},
+                        onPressed: () {
+                          _getFromCamera();
+                        },
                       ),
                     ),
                   ],

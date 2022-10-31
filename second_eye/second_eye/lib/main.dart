@@ -3,8 +3,10 @@ import 'package:second_eye/colourPage.dart';
 import 'package:second_eye/dysPage.dart';
 import 'globals.dart' as globals;
 import 'dart:developer' as developer;
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
   runApp(
     MaterialApp(
       home: MyApp(

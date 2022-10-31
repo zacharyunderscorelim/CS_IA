@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "746901003370",
+    "project_id": "cs-ia-db",
+    "storage_bucket": "cs-ia-db.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:746901003370:android:22ab97a24fd4403fc7be13",
+        "android_client_info": {
+          "package_name": "com.example.second_eye"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "746901003370-5m69k0q5ktbgpk852qgc7il81mk9lhra.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDwJ1fWKjtZaJYBqpN1fmMjEPSDkBKt8LQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "746901003370-5m69k0q5ktbgpk852qgc7il81mk9lhra.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

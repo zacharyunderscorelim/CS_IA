@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:second_eye/dysPage.dart';
 import 'main.dart';
 import 'package:image_pixels/image_pixels.dart';
+import 'dart:developer' as developer;
 
 class ColourScreen extends StatefulWidget {
   const ColourScreen({Key? key, required this.changePage}) : super(key: key);
@@ -43,6 +44,14 @@ class _ColourScreenState extends State<ColourScreen> {
     }
   }
 
+  nullCheckLogic() {
+    if (imageFile == null) {
+      return AssetImage('assets/placeholder.png');
+    } else {
+      return FileImage(imageFile!);
+    }
+  }
+
   Future ColourDetection() async {}
 
   @override
@@ -71,20 +80,28 @@ class _ColourScreenState extends State<ColourScreen> {
                       });
                     },
                     child: ImagePixels(
-                      imageProvider: FileImage(imageFile == null
-                          ? File('assets/placeholder.png')
-                          : imageFile!),
+                      imageProvider: nullCheckLogic(),
                       builder: (BuildContext context, ImgDetails img) {
                         var color = img.pixelColorAt!(
                           localPosition.dx.toInt(),
                           localPosition.dy.toInt(),
                         );
+                        developer.log("Color: $color");
+                        developer.log("xPos: ${localPosition.dx.toInt()}");
+                        developer.log("yPos: ${localPosition.dy.toInt()}");
                         if (imageFile == null) {
                           return const SizedBox(
-                              width: 150,
-                              height: 213,
+                              width: 400,
+                              height: 600,
                               child: Image(
                                   image: AssetImage('assets/placeholder.png')));
+                        } else {
+                          return SizedBox(
+                              width: 400,
+                              height: 600,
+                              child: Image(
+                                image: FileImage(imageFile!),
+                              ));
                         }
                       },
                     ),

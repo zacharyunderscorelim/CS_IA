@@ -29,6 +29,13 @@
             {
               "client_id": "746901003370-5m69k0q5ktbgpk852qgc7il81mk9lhra.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "746901003370-mhdg17vv5bcna9rmulg9hgufu5818499.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.secondEye"
+              }
             }
           ]
         }

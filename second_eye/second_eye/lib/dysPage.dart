@@ -2,16 +2,23 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+
+import 'package:second_eye/main.dart';
+import 'package:google_ml_kit/google_ml_kit.dart';
+import 'package:flutter/services.dart' show Uint8List, rootBundle;
+
+import 'dart:developer' as developer;
 
 class DysScreen extends StatefulWidget {
-  const DysScreen({Key? key, required this.changePage}) : super(key: key);
+  const DysScreen({Key key, this.changePage}) : super(key: key);
   final void Function(int) changePage;
   @override
   _DysScreenState createState() => _DysScreenState();
 }
 
 class _DysScreenState extends State<DysScreen> {
-  File? imageFile;
+  File imageFile;
   Future _getFromGallery() async {
     PickedFile pickedFile = await ImagePicker().getImage(
       source: ImageSource.gallery,
@@ -38,9 +45,47 @@ class _DysScreenState extends State<DysScreen> {
     }
   }
 
+  Future<String> OCR(img) async {
+    String result = "";
+    final textDetector = GoogleMlKit.vision.textDetector();
+    final RecognisedText recognisedText = await textDetector.processImage(img);
+    setState(() {
+      String text = recognisedText.text;
+      for (TextBlock block in recognisedText.blocks) {
+        final String text = block.text;
+        for (TextLine line in block.lines) {
+          for (TextElement element in line.elements) {
+            result += element.text + " ";
+          }
+        }
+      }
+      result += "\n\n";
+    });
+    developer.log("result:$result");
+    return result;
+  }
+
+  Future toBytes() async {
+    final bytes = await rootBundle.load('assets/placeholder.png');
+    final Uint8List list = bytes.buffer.asUint8List();
+    developer.log(bytes.toString());
+    return list;
+  }
+
+  InputImageData getAssetData() {
+    Size imageSize = Size(275, 183);
+    InputImageData data = InputImageData(
+      imageRotation: InputImageRotation.Rotation_0deg,
+      size: imageSize,
+    );
+    return data;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return MaterialApp(
+      theme: themeProvider.darkTheme ? ThemeData.dark() : ThemeData.light(),
       home: Scaffold(
         body: Container(
           child: Column(
@@ -52,12 +97,9 @@ class _DysScreenState extends State<DysScreen> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(30.0),
                   child: imageFile == null
-                      ? Image.network(
-                          'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/White_flag_of_surrender.svg/800px-White_flag_of_surrender.svg.png',
-                          fit: BoxFit.cover,
-                        )
+                      ? Image.asset("assets/placeholder.png")
                       : Image.file(
-                          imageFile!,
+                          imageFile,
                           fit: BoxFit.cover,
                         ),
                 ),
@@ -65,19 +107,30 @@ class _DysScreenState extends State<DysScreen> {
               Container(
                 height: 100,
                 width: 600,
-                child: RichText(
-                  text: const TextSpan(children: <TextSpan>[
-                    TextSpan(
-                        text: 'Text:',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, color: Colors.black)),
-                    TextSpan(
-                        text: 'not programmed yet',
-                        style: TextStyle(
-                            fontWeight: FontWeight.normal,
-                            color: Colors.black)),
-                  ]),
-                ),
+                child: FutureBuilder(
+                    future: toBytes(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return FutureBuilder<String>(
+                            future: OCR(imageFile == null
+                                ? InputImage.fromBytes(
+                                    bytes: snapshot.data,
+                                    inputImageData: getAssetData())
+                                : InputImage.fromFile(imageFile)),
+                            builder: (context, snapshot2) {
+                              if (snapshot2.hasData && snapshot2.data != "") {
+                                developer.log("data: ${snapshot2.data}");
+                                return Text((snapshot2.data).toString(),
+                                    style: TextStyle(
+                                        fontSize: themeProvider.font));
+                              } else {
+                                return Text("Loading");
+                              }
+                            });
+                      } else {
+                        return Text("Loading");
+                      }
+                    }),
                 alignment: Alignment.center,
               ),
               Container(

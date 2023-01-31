@@ -104,7 +104,10 @@ class _DysScreenState extends State<DysScreen> {
                       return Text((snapshot2.data).toString(),
                           style: TextStyle(fontSize: themeProvider.font));
                     } else {
-                      return Text("Loading");
+                      return Text(
+                        "Loading",
+                        style: TextStyle(fontSize: themeProvider.font),
+                      );
                     }
                   },
                 ),

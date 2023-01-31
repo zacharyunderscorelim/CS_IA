@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:second_eye/Styles.dart';
 import 'package:second_eye/colourPage.dart';
 import 'package:second_eye/dysPage.dart';
@@ -202,3 +203,24 @@ class _MyAppState extends State<MyApp> {
 //globals
 final screens = [ColourScreen, DysScreen, DysScreen];
 int screenindex = 0;
+
+Future<void> gayNotif(var ctx) async {
+  HapticFeedback.vibrate();
+  return showDialog(
+      context: ctx,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("OCR complete"),
+          content: const Text("The text will be displayed"),
+          actions: <Widget>[
+            TextButton(
+              child: const Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            )
+          ],
+        );
+      });
+}

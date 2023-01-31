@@ -40,12 +40,14 @@ dependencies:
   cloud_firestore: ^4.3.1
   palette_generator: ^0.3.3+2
   provider: ^6.0.5
-  shared_preferences: ^2.0.15
-  google_ml_kit: ^0.7.2
-  flutter_mobile_vision: ^0.1.4+1
+  shared_preferences: <2.0.10
   quiver: ^3.0.0
-  flutter_local_notifications: ^13.0.0
-  
+  platform: ^2.0.0
+  flutter_tesseract_ocr: ^0.4.20
+
+dependency_overrides:
+  platform: ^3.1.0
+
 
 
 dev_dependencies:
@@ -76,6 +78,8 @@ flutter:
   #   - images/a_dot_ham.jpeg
   assets:
       - assets/placeholder.png
+      - assets/tessdata_config.json
+      - assets/tessdata/eng.traineddata
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
 

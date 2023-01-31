@@ -26,6 +26,26 @@ class _SettingsState extends State<SettingsPage> {
     });
   }
 
+  Future<void> showHelpBox(BuildContext context) {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Help"),
+            content: Text(
+                "This is the settings page. Here you can change the theme of the app and the font size. At the bottom of the screen, there is a navigation bar. You can use this to navigate to the other pages of the app. The CVD page is where you can check the colour of an image, and the Dys page is where you can use OCR to read difficult to read text."),
+            actions: <Widget>[
+              TextButton(
+                child: Text("Close"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
+          );
+        });
+  }
+
   var db = FirebaseFirestore.instance;
   int fontSize = 16;
   var fontList = List<int>.generate(35, (i) => i + 1);
@@ -94,6 +114,21 @@ class _SettingsState extends State<SettingsPage> {
                           child: Text(value.toString()),
                         );
                       }).toList(),
+                    )),
+                Container(
+                    margin: EdgeInsets.all(12),
+                    height: 50,
+                    width: double.infinity,
+                    child: TextButton(
+                      child: Text("help"),
+                      // ignore: void_checks
+                      onPressed: () {
+                        return FutureBuilder<void>(
+                            future: showHelpBox(context),
+                            builder: (snapshot, context) {
+                              return snapshot.widget;
+                            });
+                      },
                     ))
               ],
             ),

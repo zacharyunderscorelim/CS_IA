@@ -1,0 +1,15 @@
+criterion a b c e due Feb 1, 3 interviews no video
+
+criterion B:
+prototype screens w/ user feedback
+modular diagram
+flowchart , pseudocode, flowchart, pseudocode ...
+sys flowchart
+data structure justification
+ER diagram
+test plan
+ROT:
+
+
+
+extensibility

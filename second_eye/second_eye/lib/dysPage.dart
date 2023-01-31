@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -5,8 +6,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import 'package:second_eye/main.dart';
-import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:flutter/services.dart' show Uint8List, rootBundle;
+import 'package:http/http.dart' as http;
+import 'package:flutter_tesseract_ocr/flutter_tesseract_ocr.dart';
 
 import 'dart:developer' as developer;
 
@@ -18,8 +20,12 @@ class DysScreen extends StatefulWidget {
 }
 
 class _DysScreenState extends State<DysScreen> {
-  File imageFile;
+  var image;
+  String parsedText = "";
+  bool loading = true;
+
   Future _getFromGallery() async {
+    loading = true;
     PickedFile pickedFile = await ImagePicker().getImage(
       source: ImageSource.gallery,
       maxWidth: 1800,
@@ -27,12 +33,14 @@ class _DysScreenState extends State<DysScreen> {
     );
     if (pickedFile != null) {
       setState(() {
-        imageFile = File(pickedFile.path);
+        image = pickedFile;
+        loading = false;
       });
     }
   }
 
   Future _getFromCamera() async {
+    loading = true;
     PickedFile pickedFile = await ImagePicker().getImage(
       source: ImageSource.camera,
       maxWidth: 1800,
@@ -40,45 +48,25 @@ class _DysScreenState extends State<DysScreen> {
     );
     if (pickedFile != null) {
       setState(() {
-        imageFile = File(pickedFile.path);
+        image = pickedFile;
+        loading = false;
       });
     }
   }
 
-  Future<String> OCR(img) async {
-    String result = "";
-    final textDetector = GoogleMlKit.vision.textDetector();
-    final RecognisedText recognisedText = await textDetector.processImage(img);
-    setState(() {
-      String text = recognisedText.text;
-      for (TextBlock block in recognisedText.blocks) {
-        final String text = block.text;
-        for (TextLine line in block.lines) {
-          for (TextElement element in line.elements) {
-            result += element.text + " ";
-          }
-        }
-      }
-      result += "\n\n";
-    });
-    developer.log("result:$result");
-    return result;
-  }
+  Future OCR(var image, var ctx) async {
+    var path;
+    var text;
+    if (image == "assets/placeholder.png") {
+      path = "assets/placeholder.png";
+      text = "loading";
+    } else {
+      path = image.path;
+      text = await FlutterTesseractOcr.extractText(path, language: "eng");
+      await gayNotif(ctx);
+    }
 
-  Future toBytes() async {
-    final bytes = await rootBundle.load('assets/placeholder.png');
-    final Uint8List list = bytes.buffer.asUint8List();
-    developer.log(bytes.toString());
-    return list;
-  }
-
-  InputImageData getAssetData() {
-    Size imageSize = Size(275, 183);
-    InputImageData data = InputImageData(
-      imageRotation: InputImageRotation.Rotation_0deg,
-      size: imageSize,
-    );
-    return data;
+    return text;
   }
 
   @override
@@ -96,10 +84,10 @@ class _DysScreenState extends State<DysScreen> {
                 width: 600,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(30.0),
-                  child: imageFile == null
+                  child: image == null
                       ? Image.asset("assets/placeholder.png")
                       : Image.file(
-                          imageFile,
+                          File(image.path),
                           fit: BoxFit.cover,
                         ),
                 ),
@@ -108,30 +96,18 @@ class _DysScreenState extends State<DysScreen> {
                 height: 100,
                 width: 600,
                 child: FutureBuilder(
-                    future: toBytes(),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        return FutureBuilder<String>(
-                            future: OCR(imageFile == null
-                                ? InputImage.fromBytes(
-                                    bytes: snapshot.data,
-                                    inputImageData: getAssetData())
-                                : InputImage.fromFile(imageFile)),
-                            builder: (context, snapshot2) {
-                              if (snapshot2.hasData && snapshot2.data != "") {
-                                developer.log("data: ${snapshot2.data}");
-                                return Text((snapshot2.data).toString(),
-                                    style: TextStyle(
-                                        fontSize: themeProvider.font));
-                              } else {
-                                return Text("Loading");
-                              }
-                            });
-                      } else {
-                        return Text("Loading");
-                      }
-                    }),
-                alignment: Alignment.center,
+                  future: OCR(image == null ? "assets/placeholder.png" : image,
+                      context),
+                  builder: (context, snapshot2) {
+                    if (snapshot2.hasData && snapshot2.data != "") {
+                      developer.log("data: ${snapshot2.data}");
+                      return Text((snapshot2.data).toString(),
+                          style: TextStyle(fontSize: themeProvider.font));
+                    } else {
+                      return Text("Loading");
+                    }
+                  },
+                ),
               ),
               Container(
                 height: 100,

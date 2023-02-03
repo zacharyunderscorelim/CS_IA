@@ -6,8 +6,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import 'package:second_eye/main.dart';
-import 'package:flutter/services.dart' show Uint8List, rootBundle;
-import 'package:http/http.dart' as http;
 import 'package:flutter_tesseract_ocr/flutter_tesseract_ocr.dart';
 
 import 'dart:developer' as developer;
@@ -31,12 +29,14 @@ class _DysScreenState extends State<DysScreen> {
       maxWidth: 1800,
       maxHeight: 1800,
     );
+    //getting the image from the gallery
     if (pickedFile != null) {
       setState(() {
         image = pickedFile;
         loading = false;
       });
     }
+    //setting the image file as the gallery image
   }
 
   Future _getFromCamera() async {
@@ -46,24 +46,31 @@ class _DysScreenState extends State<DysScreen> {
       maxWidth: 1800,
       maxHeight: 1800,
     );
+    //getting the image from the camera
     if (pickedFile != null) {
       setState(() {
         image = pickedFile;
         loading = false;
       });
     }
+    //setting the image file as the camera image
   }
 
   Future OCR(var image, var ctx) async {
     var path;
     var text;
+    //initialising the path and text variables
     if (image == "assets/placeholder.png") {
       path = "assets/placeholder.png";
       text = "loading";
+      //if the image is the placeholder image
+      //set the path to the placeholder image and the text to "loading"
     } else {
       path = image.path;
       text = await FlutterTesseractOcr.extractText(path, language: "eng");
+      //set text to the extracted OCR text from the image
       await gayNotif(ctx);
+      //vibrate and notify user that OCR is complete
     }
 
     return text;
@@ -74,6 +81,7 @@ class _DysScreenState extends State<DysScreen> {
     final themeProvider = Provider.of<ThemeProvider>(context);
     return MaterialApp(
       theme: themeProvider.darkTheme ? ThemeData.dark() : ThemeData.light(),
+      //setting the theme to dark or light depending on the themeProvider
       home: Scaffold(
         body: Container(
           child: Column(
@@ -86,27 +94,37 @@ class _DysScreenState extends State<DysScreen> {
                   borderRadius: BorderRadius.circular(30.0),
                   child: image == null
                       ? Image.asset("assets/placeholder.png")
+                      //if the image is null, display the placeholder image
                       : Image.file(
                           File(image.path),
                           fit: BoxFit.cover,
                         ),
+                  //if the image is not null, display the image
                 ),
               ),
               Container(
                 height: 100,
                 width: 600,
                 child: FutureBuilder(
-                  future: OCR(image == null ? "assets/placeholder.png" : image,
+                  future: OCR(
+                      image == null
+                          ? "assets/placeholder.png"
+                          :
+                          // Call OCR function on placeholder image if image is null
+                          image,
+                      // Call OCR function on image
                       context),
                   builder: (context, snapshot2) {
                     if (snapshot2.hasData && snapshot2.data != "") {
                       developer.log("data: ${snapshot2.data}");
                       return Text((snapshot2.data).toString(),
                           style: TextStyle(fontSize: themeProvider.font));
+                      // If OCR return function is not empty, display OCR text
                     } else {
                       return Text(
                         "Loading",
                         style: TextStyle(fontSize: themeProvider.font),
+                        //else display "loading"
                       );
                     }
                   },
@@ -128,6 +146,7 @@ class _DysScreenState extends State<DysScreen> {
                         iconSize: 70,
                         onPressed: () {
                           _getFromGallery();
+                          //button press to open gallery and upload image
                         },
                       ),
                     ),
@@ -144,6 +163,7 @@ class _DysScreenState extends State<DysScreen> {
                         iconSize: 70,
                         onPressed: () {
                           _getFromCamera();
+                          //button press to open camera and upload image
                         },
                       ),
                     ),

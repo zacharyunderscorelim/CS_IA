@@ -4,7 +4,6 @@ import 'package:second_eye/Styles.dart';
 import 'package:second_eye/colourPage.dart';
 import 'package:second_eye/dysPage.dart';
 import 'package:second_eye/settings.dart';
-import 'package:second_eye/settings.dart';
 import 'dart:developer' as developer;
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -28,10 +27,12 @@ void main() async {
 }
 
 class ThemeProvider with ChangeNotifier {
+  //creation of a class ThemeProvider to notify the app when the theme and font size changes
   ThemePrefs themePrefs = ThemePrefs();
   FontPrefs fontPrefs = FontPrefs();
   bool _dark = false;
   double _font = 16;
+  //initial values for the theme and font size
 
   bool get darkTheme {
     return _dark;
@@ -40,6 +41,7 @@ class ThemeProvider with ChangeNotifier {
   double get font {
     return _font;
   }
+  //getters for the theme and font size
 
   set darkTheme(bool value) {
     if (value == null) {
@@ -54,6 +56,7 @@ class ThemeProvider with ChangeNotifier {
     }
     _font = value;
   }
+  //setters for the theme and font size
 
   setDarkmode(bool value) {
     _dark = value;
@@ -66,6 +69,7 @@ class ThemeProvider with ChangeNotifier {
     fontPrefs.setFont(value);
     notifyListeners();
   }
+  //notifying the app when the theme and font size changes
 }
 
 class ThemePrefs {
@@ -75,11 +79,13 @@ class ThemePrefs {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool(THEME_STATUS, value);
   }
+  //making sure the theme is saved in the shared preferences
 
   Future<bool> getTheme() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getBool(THEME_STATUS) ?? false;
   }
+  //getting the theme from the shared preferences
 }
 
 class FontPrefs {
@@ -89,11 +95,13 @@ class FontPrefs {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setDouble(FONT_SIZE, value);
   }
+  //making sure the font size is saved in the shared preferences
 
   Future<double> getFont() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getDouble(FONT_SIZE) ?? 16;
   }
+  //getting the font size from the shared preferences
 }
 
 class MyApp extends StatefulWidget {
@@ -116,22 +124,27 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void initState() {
+    //initialising the app
     super.initState();
     getCurrentAppTheme();
+    //getting the current theme
     _page2 = ColourScreen(changePage: _changeTab);
     _page3 = DysScreen(changePage: _changeTab);
     _page4 = SettingsPage(changePage: _changeTab);
     _pages = [_page2, _page3, _page4];
     _currentIndex = 0;
     _currentPage = _page2;
+    //initialising the different pages and the current page as the colourblind tool
   }
 
   void getCurrentAppTheme() async {
     themeChangeProvider.darkTheme =
         await themeChangeProvider.themePrefs.getTheme();
+    //getting the current theme from the shared preferences
   }
 
   void _changeTab(int index) {
+    //changing the current page to another one
     setState(() {
       _currentIndex = index;
       _currentPage = _pages[index];
@@ -149,9 +162,11 @@ class _MyAppState extends State<MyApp> {
           builder: (BuildContext context, value, Widget child) {
         return MaterialApp(
             theme: Styles.themeData(themeChangeProvider.darkTheme, context),
+            //setting overall app theme to dark or light based on the current theme variable
             home: Scaffold(
               body: _currentPage,
               bottomNavigationBar: BottomNavigationBar(
+                  //creation of a bottom navigation bar
                   currentIndex: _currentIndex,
                   type: BottomNavigationBarType.fixed,
                   selectedItemColor: Colors.white,
@@ -160,6 +175,7 @@ class _MyAppState extends State<MyApp> {
                   onTap: (index) {
                     _changeTab(index);
                   },
+                  //changing the current page when a button on the navigation bar is pressed
                   items: const <BottomNavigationBarItem>[
                     BottomNavigationBarItem(
                         icon: Icon(Icons.color_lens_rounded),
@@ -169,6 +185,7 @@ class _MyAppState extends State<MyApp> {
                     BottomNavigationBarItem(
                         icon: Icon(Icons.settings_rounded), label: "Settings"),
                   ]),
+              //labels of the buttons on the navigation bar
               drawer: Drawer(
                 child: Container(
                   margin: const EdgeInsets.only(top: 0.0),
@@ -205,8 +222,11 @@ final screens = [ColourScreen, DysScreen, DysScreen];
 int screenindex = 0;
 
 Future<void> gayNotif(var ctx) async {
+  //notification for function
   HapticFeedback.vibrate();
+  //vibrate
   return showDialog(
+      //create dialog box
       context: ctx,
       barrierDismissible: false,
       builder: (BuildContext context) {
@@ -219,6 +239,7 @@ Future<void> gayNotif(var ctx) async {
               onPressed: () {
                 Navigator.of(context).pop();
               },
+              //button to close the dialog box
             )
           ],
         );

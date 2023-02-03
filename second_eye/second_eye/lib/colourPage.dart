@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -10,13 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:second_eye/Styles.dart';
 import 'package:second_eye/dysPage.dart';
 import 'main.dart';
-import 'package:image_pixels/image_pixels.dart';
 import 'dart:developer' as developer;
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:image/image.dart' as img;
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:palette_generator/palette_generator.dart';
 import 'package:flutter/services.dart';
 
@@ -34,8 +27,10 @@ class _ColourScreenState extends State<ColourScreen> {
   Future<Color> getImagePalette(ImageProvider imageProvider) async {
     final PaletteGenerator paletteGenerator =
         await PaletteGenerator.fromImageProvider(imageProvider);
+    //calling the PaletteGenerator fromImageProvider to generate a colour palette of the image
     if (paletteGenerator.dominantColor != null) {
       return paletteGenerator.dominantColor.color;
+      //returning the dominant colour of the image
     } else {
       return Colors.white;
     }
@@ -45,56 +40,66 @@ class _ColourScreenState extends State<ColourScreen> {
     int R = colour.red;
     int G = colour.green;
     int B = colour.blue;
+    //getting the RGB values of the dominant colour
 
     int r, g, b = 0;
     double temp = 0.0;
     double min = 1000000.0;
     String closestColourId = "colour0";
     String closestColourName = " ";
+    //initialising variables
 
     developer.log("RGB: $R, $G, $B");
 
     //it through the database and finds the closest colour
     final QuerySnapshot querySnapshot = await db.collection("colours").get();
+    //getting all the colours from the database
 
     final allColours = querySnapshot.docs
         .map((doc) => doc.data() as Map<dynamic, dynamic>)
         .toList();
+    //converting the query snapshot to a list of maps
 
-    print(allColours);
     for (int i = 0; i < allColours.length; i++) {
+      //looping through the list of maps
       r = allColours[i]["R"];
       g = allColours[i]["G"];
       b = allColours[i]["B"];
+      //getting the RGB values of the current iterated colour in the database
       double k = (R + r) / 2;
+      //calculating the value of k
       temp = sqrt((2 + (k / 256)) * pow((r - R), 2) +
           4 * pow((g - G), 2) +
           (2 + ((255 - k) / 256)) * pow((b - B), 2));
-      print("temp:" + temp.toString());
+      //calculating the distance between the dominant colour and the current iterated colour in the database
+
       if (temp < min) {
         min = temp;
         closestColourName = allColours[i]["name"];
+        //updating the closest colour name and the minimum distance
       }
     }
-    print("min:" + min.toString());
-    print(closestColourName);
     return closestColourName.toString();
+    //returning the closest colour name
   }
 
   var db = FirebaseFirestore.instance;
   Color colour = Colors.white;
   File imageFile;
+
   Future _getFromGallery() async {
     PickedFile pickedFile = await ImagePicker().getImage(
       source: ImageSource.gallery,
       maxWidth: 1800,
       maxHeight: 1800,
     );
+    //getting the image from the gallery
     if (pickedFile != null) {
       setState(() {
         imageFile = File(pickedFile.path);
       });
     }
+    //setting the image file to the image picked from the gallery
   }
 
   Future _getFromCamera() async {
@@ -103,27 +108,33 @@ class _ColourScreenState extends State<ColourScreen> {
       maxWidth: 1800,
       maxHeight: 1800,
     );
+    //getting the image from the camera
     if (pickedFile != null) {
       setState(() {
         imageFile = File(pickedFile.path);
       });
     }
+    //setting the image file to the image picked from the camera
   }
 
   Future<void> AddColour(var ctx, var colour, var db) async {
     String temp = "placeholder";
+    //initialising a temporary string variable
     return showDialog(
         context: ctx,
         barrierDismissible: false,
         builder: (ctx) {
           return AlertDialog(
+            //creating an alert dialog
             title: const Text('Add Colour'),
+            //setting the title of the alert dialog
             content: TextField(
               onChanged: (value) {
                 setState(() {
                   temp = value;
                 });
               },
+              //getting the name of the colour from the user
               controller: _textController,
               decoration: InputDecoration(hintText: "Enter Colour Name"),
             ),
@@ -136,6 +147,7 @@ class _ColourScreenState extends State<ColourScreen> {
                   });
                 },
               ),
+              //creating a cancel button
               TextButton(
                 child: Text('OK'),
                 onPressed: () {
@@ -150,6 +162,7 @@ class _ColourScreenState extends State<ColourScreen> {
                   });
                 },
               ),
+              //creating an ok button
             ],
           );
         });
@@ -168,14 +181,17 @@ class _ColourScreenState extends State<ColourScreen> {
               Container(
                 height: 400,
                 width: 600,
+                //height and width of the image container
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(30.0),
                   child: imageFile == null
                       ? Image.asset("assets/placeholder.png")
+                      //displaying a placeholder image when image is not uploaded
                       : Image.file(
                           imageFile,
                           fit: BoxFit.cover,
                         ),
+                  //displaying the image from upload/camera
                 ),
               ),
               Container(
@@ -183,13 +199,17 @@ class _ColourScreenState extends State<ColourScreen> {
                 width: 600,
                 child: FutureBuilder<Color>(
                   future: getImagePalette(imageFile == null
-                      ? const AssetImage('assets/placeholder.png')
-                      : FileImage(imageFile)),
+                          ? const AssetImage('assets/placeholder.png')
+                          //gets the dominant colour of the placeholder image when image is not uploaded
+                          : FileImage(imageFile)
+                      //gets the dominant colour of the image from upload/camera
+                      ),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       colour = snapshot.data;
                       return FutureBuilder<String>(
                         future: ColourDetection(colour, db),
+                        //calls the colour name detection function on the dominant colour's RGB values
                         builder: (context, snapshot) {
                           if (snapshot.hasData) {
                             return Text(
@@ -198,6 +218,7 @@ class _ColourScreenState extends State<ColourScreen> {
                                 fontSize: themeProvider.font,
                                 fontWeight: FontWeight.bold,
                               ),
+                              //displays the dominant colour's name
                             );
                           } else {
                             return Text(
@@ -206,18 +227,20 @@ class _ColourScreenState extends State<ColourScreen> {
                                 fontSize: themeProvider.font,
                                 fontWeight: FontWeight.bold,
                               ),
+                              //displays "white" when dominant colour is not detected
                             );
                           }
                         },
                       );
                     } else {
-                      return Text(
+                      return const Text(
                         "Dominant Colour: white",
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       );
+                      //displays "white" by default
                     }
                   },
                 ),
@@ -241,6 +264,7 @@ class _ColourScreenState extends State<ColourScreen> {
                           _getFromGallery();
                           HapticFeedback.mediumImpact();
                         },
+                        //button to open gallery and upload image
                       ),
                     ),
                     Container(
@@ -254,6 +278,7 @@ class _ColourScreenState extends State<ColourScreen> {
                         onPressed: () {
                           AddColour(context, colour, db);
                         },
+                        //button to add new colour to the database
                       ),
                     ),
                     Container(
@@ -268,6 +293,7 @@ class _ColourScreenState extends State<ColourScreen> {
                           _getFromCamera();
                           HapticFeedback.mediumImpact();
                         },
+                        //button to open camera and upload image
                       ),
                     ),
                   ],
@@ -281,159 +307,3 @@ class _ColourScreenState extends State<ColourScreen> {
     );
   }
 }
- 
-
-/*
-import 'dart:async';
-import 'dart:typed_data';
-import 'dart:ui' as ui;
-
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:image/image.dart' as img;
-import 'package:flutter/services.dart' show rootBundle;
-
-class ColorPickerWidget extends StatefulWidget {
-  @override
-  _ColorPickerWidgetState createState() => _ColorPickerWidgetState();
-}
-
-class _ColorPickerWidgetState extends State<ColorPickerWidget> {
-  String imagePath = 'assets/images/santorini.jpg';
-  GlobalKey imageKey = GlobalKey();
-  GlobalKey paintKey = GlobalKey();
-
-  // CHANGE THIS FLAG TO TEST BASIC IMAGE, AND SNAPSHOT.
-  bool useSnapshot = true;
-
-  // based on useSnapshot=true ? paintKey : imageKey ;
-  // this key is used in this example to keep the code shorter.
-  GlobalKey currentKey;
-
-  final StreamController<Color> _stateController = StreamController<Color>();
-  img.Image photo;
-
-  @override
-  void initState() {
-    currentKey = useSnapshot ? paintKey : imageKey;
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final String title = useSnapshot ? "snapshot" : "basic";
-    return Scaffold(
-      appBar: AppBar(title: Text("Color picker $title")),
-      body: StreamBuilder(
-          initialData: Colors.green[500],
-          stream: _stateController.stream,
-          builder: (buildContext, snapshot) {
-            Color selectedColor = snapshot.data ?? Colors.green;
-            return Stack(
-              children: <Widget>[
-                RepaintBoundary(
-                  key: paintKey,
-                  child: GestureDetector(
-                    onPanDown: (details) {
-                      searchPixel(details.globalPosition);
-                    },
-                    onPanUpdate: (details) {
-                      searchPixel(details.globalPosition);
-                    },
-                    child: Center(
-                      child: Image.asset(
-                        imagePath,
-                        key: imageKey,
-                        //color: Colors.red,
-                        //colorBlendMode: BlendMode.hue,
-                        //alignment: Alignment.bottomRight,
-                        fit: BoxFit.none,
-                        //scale: .8,
-                      ),
-                    ),
-                  ),
-                ),
-                Container(
-                  margin: EdgeInsets.all(70),
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: selectedColor,
-                      border: Border.all(width: 2.0, color: Colors.white),
-                      boxShadow: [
-                        BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 4,
-                            offset: Offset(0, 2))
-                      ]),
-                ),
-                Positioned(
-                  child: Text('${selectedColor}',
-                      style: TextStyle(
-                          color: Colors.white,
-                          backgroundColor: Colors.black54)),
-                  left: 114,
-                  top: 95,
-                ),
-              ],
-            );
-          }),
-    );
-  }
-
-  void searchPixel(Offset globalPosition) async {
-    if (photo == null) {
-      await (useSnapshot ? loadSnapshotBytes() : loadImageBundleBytes());
-    }
-    _calculatePixel(globalPosition);
-  }
-
-  void _calculatePixel(Offset globalPosition) {
-    RenderBox box = currentKey.currentContext.findRenderObject();
-    Offset localPosition = box.globalToLocal(globalPosition);
-
-    double px = localPosition.dx;
-    double py = localPosition.dy;
-
-    if (!useSnapshot) {
-      double widgetScale = box.size.width / photo.width;
-      print(py);
-      px = (px / widgetScale);
-      py = (py / widgetScale);
-    }
-
-    int pixel32 = photo.getPixelSafe(px.toInt(), py.toInt());
-    int hex = abgrToArgb(pixel32);
-
-    _stateController.add(Color(hex));
-  }
-
-  Future<void> loadImageBundleBytes() async {
-    ByteData imageBytes = await rootBundle.load(imagePath);
-    setImageBytes(imageBytes);
-  }
-
-  Future<void> loadSnapshotBytes() async {
-    RenderRepaintBoundary boxPaint = paintKey.currentContext.findRenderObject();
-    ui.Image capture = await boxPaint.toImage();
-    ByteData imageBytes =
-        await capture.toByteData(format: ui.ImageByteFormat.png);
-    setImageBytes(imageBytes);
-    capture.dispose();
-  }
-
-  void setImageBytes(ByteData imageBytes) {
-    List<int> values = imageBytes.buffer.asUint8List();
-    photo = null;
-    photo = img.decodeImage(values);
-  }
-}
-
-// image lib uses uses KML color format, convert #AABBGGRR to regular #AARRGGBB
-int abgrToArgb(int argbColor) {
-  int r = (argbColor >> 16) & 0xFF;
-  int b = argbColor & 0xFF;
-  return (argbColor & 0xFF00FF00) | (b << 16) | r;
-}
-*/

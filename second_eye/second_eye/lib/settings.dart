@@ -19,13 +19,6 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsState extends State<SettingsPage> {
   @override
-  bool getThemeBoolean(var db) {
-    DocumentReference docRef = db.collection("settings").doc("theme");
-    docRef.get().then((DocumentSnapshot documentSnapshot) {
-      return (documentSnapshot.data() as Map<dynamic, dynamic>)["light_theme"];
-    });
-  }
-
   Future<void> showHelpBox(BuildContext context) {
     return showDialog(
         context: context,
